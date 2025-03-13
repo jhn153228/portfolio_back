@@ -21,9 +21,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-APPS = [
-    "apps.userapp"
-]
+APPS = ["apps.userapp"]
 
 THIRD_PARTY_APPS = [
     "corsheaders",
@@ -48,15 +46,19 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "apps.userapp.authentications.CustomJWTAuthentication",
+    ],
 }
 
-JWT_SECRET = os.environ.get("JWT_SECRET", "django_good")
+JWT_SECRET = CONF.JWT_SECRET
 access_token_lifetime = timedelta(hours=1)
 refresh_token_lifetime = timedelta(days=30)
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": access_token_lifetime,
-    "REFRESH_TOKEN_LIFETIME": access_token_lifetime,
+    "REFRESH_TOKEN_LIFETIME": refresh_token_lifetime,
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
@@ -65,11 +67,12 @@ SIMPLE_JWT = {
     "VERIFYING_KEY": None,
     "AUDIENCE": None,
     "ISSUER": None,
-    "USER_ID_FIELD": "username",
-    "USER_ID_CLAIM": "username",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
-    "AUTH_COOKIE": "access_token",  # Cookie name. Enables cookies if value is set.
+    # Refresh token cookie settings
+    "AUTH_COOKIE": "access_token",  # The name of the cookie to use for the access token.
     "AUTH_COOKIE_DOMAIN": None,  # A string like "example.com", or None for standard domain cookie.
     "AUTH_COOKIE_SECURE": False,  # Whether the auth cookies should be secure (https:// only).
     "AUTH_COOKIE_HTTP_ONLY": True,  # Http only cookie flag.It's not fetch by javascript.
@@ -77,6 +80,7 @@ SIMPLE_JWT = {
     "AUTH_COOKIE_SAMESITE": "Lax",  # Whether to set the flag restricting cookie leaks on cross-site requests.
     # This can be 'Lax', 'Strict', or None to disable the flag.
 }
+
 
 ROOT_URLCONF = "config.urls"
 
@@ -98,7 +102,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-AUTH_USER_MODEL = 'userapp.Users'
+AUTH_USER_MODEL = "userapp.Users"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -163,37 +167,37 @@ SPECTACULAR_SETTINGS = {
 }
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{asctime} {module} [{levelname}]: {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} {module} [{levelname}]: {message}",
+            "style": "{",
         },
-        'simple': {
-            'format': '[{levelname}]: {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+        "simple": {
+            "format": "[{levelname}]: {message}",
+            "style": "{",
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
         },
-        'django.db.backends': {
-            'handlers': ['console'],  # 파일 핸들러만 사용하여 쿼리 로그 기록
-            'level': 'DEBUG',  # DEBUG 레벨로 설정하여 모든 쿼리 기록
-            'propagate': False,
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "django.db.backends": {
+            "handlers": ["console"],  # 파일 핸들러만 사용하여 쿼리 로그 기록
+            "level": "DEBUG",  # DEBUG 레벨로 설정하여 모든 쿼리 기록
+            "propagate": False,
         },
     },
 }
 
-LOG = logging.getLogger('django.db.backends')
+LOG = logging.getLogger("django.db.backends")
